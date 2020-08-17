@@ -1,0 +1,29 @@
+[Package]
+version: 1
+depends: 
+
+[Product]
+type: localboot
+id: ica-clean-profiles
+name: ica-clean-profiles
+description: Clean out all old student account profiles.
+advice: The powershell script can be generated using the cleanprofiles program.
+See git@github.com:ICA-IT/clean_student_profiles.git
+version: 1.0
+priority: 0
+licenseRequired: False
+productClasses: 
+setupScript: setup.opsiscript
+uninstallScript: uninstall.opsiscript
+updateScript: 
+alwaysScript: 
+onceScript: 
+customScript: 
+userLoginScript: 
+
+[Changelog]
+ica-clean-profiles (1.0-1) stable; urgency=low
+
+Project created with opsi Package Builder 8.4.4
+
+ -- John Kuras <jkuras@islandchristianacademy.com>  Mon, 17 Aug 2020 10:48:01 +0000
