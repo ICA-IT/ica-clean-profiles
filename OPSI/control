@@ -1,6 +1,7 @@
 [Package]
-version: 1
+version: 2
 depends: 
+incremental: False
 
 [Product]
 type: localboot
@@ -8,8 +9,8 @@ id: ica-clean-profiles
 name: ica-clean-profiles
 description: Clean out all old student account profiles.
 advice: The powershell script can be generated using the cleanprofiles program.
-See git@github.com:ICA-IT/clean_student_profiles.git
-version: 1.0
+
+version: 1.1
 priority: 0
 licenseRequired: False
 productClasses: 
@@ -20,6 +21,42 @@ alwaysScript:
 onceScript: 
 customScript: 
 userLoginScript: 
+
+[ProductProperty]
+type: unicode
+name: password_share
+multivalue: False
+editable: True
+description: The password used to access the network share.
+values: [""]
+default: [""]
+
+[ProductProperty]
+type: unicode
+name: file_name
+multivalue: False
+editable: True
+description: Name of the script file saved on the network share.
+values: [""]
+default: ["CleanStudentProfiles.ps1"]
+
+[ProductProperty]
+type: unicode
+name: share_username
+multivalue: False
+editable: True
+description: Username to access the network share.
+values: [""]
+default: [""]
+
+[ProductProperty]
+type: unicode
+name: share_name
+multivalue: False
+editable: True
+description: Network share used to store profile cleaning script
+values: [""]
+default: ["\\\\server\\opsi_images"]
 
 [Changelog]
 ica-clean-profiles (1.0-1) stable; urgency=low

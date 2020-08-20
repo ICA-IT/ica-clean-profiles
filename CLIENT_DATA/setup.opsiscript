@@ -47,6 +47,11 @@ DefVar $NsisInstallBatch$
 DefVar $LogDir$
 DefVar $WinVer$
 DefVar $policy$
+DefVar $PROP_sharename$
+DefVar $PROP_shareUN$
+DefVar $PROP_sharePW$
+DefVar $PROP_scriptname$
+
 DefstringList $policylist$
 
 Set $LogDir$ = "%opsiLogDir%"
@@ -54,13 +59,18 @@ Set $WinVer$ = GetMsVersionInfo
 
 include_append "%ScriptPath%\check_inno_exitcode.opsiscript"
 
+set $PROP_sharename$ = GetProductProperty("share_name","\\server\opsi_workbench\dropbox")
+set $PROP_shareUN$ = GetProductProperty("share_username","dad")
+set $PROP_sharePW$ = GetProductProperty("password_share","password")
+set $PROP_scriptname$ = GetProductProperty("file_name","CleanStudentProfiles.ps1")
+
 ; ----------------------------------------------------------------
 Set $SetupType$       = "inno"
 ; ----------------------------------------------------------------
 
 Set $ProductId$       = "ica-clean-profiles"
 Set $Setupfile$       = "Win10Upgrade.exe"
-Set $InstallDir$      = "c:\temp\"
+Set $InstallDir$      = "c:\temp"
 Set $LicenseRequired$ = "false"
 Set $LicensePool$     = "p_" + $ProductId$
 Set $MsiId$           = ""
@@ -97,6 +107,7 @@ else
 
    comment "Create the scratch folder"
    Files_install
+   DOSInAnIconGetScript
    
    comment "Save the current powershell execution policy"
 ;   set $policy$ = takeString(1,shellCall('powershell.exe get-executionpolicy'))
@@ -106,7 +117,7 @@ else
    comment "Set the powershell execution policy to permit remote signed scripts"
    shellCall('powershell.exe set-executionpolicy RemoteSigned')
    set $policylist$ = shellCall('powershell.exe get-executionpolicy')
-   
+
    comment "Execute the powershell script"
    Execwith_ps powershell.exe winst /sysnative
    
@@ -126,11 +137,16 @@ endif
 ; ----------------------------------------------------------------
 ; install section
 ; ----------------------------------------------------------------
+[DOSInAnIconGetScript]
+; Copy the script file to local install folder
+net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
+copy v:\$PROP_scriptname$ $InstallDir$\$PROP_scriptname$
+net use v: /delete
 
 [Execwith_ps]
 trap { write-output $_ ; exit 1 }
 cd $InstallDir$
-& .\CleanStudentProfiles.ps1
+& .\$PROP_scriptname$
 exit $LASTEXITCODE
 
 [Files_install]
