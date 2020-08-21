@@ -51,11 +51,14 @@ DefVar $PROP_sharename$
 DefVar $PROP_shareUN$
 DefVar $PROP_sharePW$
 DefVar $PROP_scriptname$
+DefVar $UN_arg$
 
 DefstringList $policylist$
 
 Set $LogDir$ = "%opsiLogDir%"
 Set $WinVer$ = GetMsVersionInfo
+set $PROP_shareUN$ = ""
+set $PROP_sharename$ = ""
 
 include_append "%ScriptPath%\check_inno_exitcode.opsiscript"
 
@@ -69,7 +72,7 @@ Set $SetupType$       = "inno"
 ; ----------------------------------------------------------------
 
 Set $ProductId$       = "ica-clean-profiles"
-Set $Setupfile$       = "Win10Upgrade.exe"
+Set $Setupfile$       = "CleanStudentProfiles.ps1"
 Set $InstallDir$      = "c:\temp"
 Set $LicenseRequired$ = "false"
 Set $LicensePool$     = "p_" + $ProductId$
@@ -107,7 +110,25 @@ else
 
    comment "Create the scratch folder"
    Files_install
-   DOSInAnIconGetScript
+   
+; prepare args ============================================================
+; /user
+	if ( $PROP_shareUN$ = "none" or $PROP_shareUN$ = "" )
+		Set $UN_arg$	= ""
+	else
+		Set $UN_arg$	= "/user:" + $PROP_shareUN$
+	endif
+
+; $PROP_scriptname$
+	if ( $PROP_scriptname$ = "none" or $PROP_scriptname$ = "" )
+		Set $PROP_scriptname$ = $Setupfile$
+	endif
+
+   if (not($PROP_sharename$ = '')) and (not($PROP_sharename$ = "none"))
+		comment "Fetch script from server"
+		DOSInAnIconGetScript
+		Sub_check_exitcode
+   endif
    
    comment "Save the current powershell execution policy"
 ;   set $policy$ = takeString(1,shellCall('powershell.exe get-executionpolicy'))
@@ -120,6 +141,7 @@ else
 
    comment "Execute the powershell script"
    Execwith_ps powershell.exe winst /sysnative
+   Sub_check_exitcode
    
    comment "Restore the original powershell execution policy"
    shellCall('powershell.exe set-executionpolicy '+$policy$)
@@ -139,8 +161,9 @@ endif
 ; ----------------------------------------------------------------
 [DOSInAnIconGetScript]
 ; Copy the script file to local install folder
-net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
+net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no $UN_arg$
 copy v:\$PROP_scriptname$ $InstallDir$\$PROP_scriptname$
+if %errorlevel% neq 0 exit /b %errorlevel%
 net use v: /delete
 
 [Execwith_ps]
